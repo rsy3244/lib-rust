@@ -26,7 +26,10 @@ impl<'a> Scanner<'a> {
 
 trait Monoid {
     fn unit() -> Self;
-    fn ope(&self, e: Self) -> Self;
+    fn ope(self, e: Self) -> Self;
+    //fn shl(self, e: u32) -> Self;
+    //fn trailing_zeros(self) -> u32;
+    //fn trailing_nonzeros(self) -> u32;
 }
 
 struct SegmentTree<T: Monoid>{
@@ -44,28 +47,45 @@ where T: Monoid,
             data : vec![T::unit(); 2*n+1],
         }
     }
+
     fn update(&mut self, idx: usize, e: T) {
-        let mut idx = e*2;
+        let mut idx = idx << 1;
         while idx > 0 {
-            data[idx] = data[idx].ope(e);
-            idx /= 2;
+            self.data[idx] = self.data[idx].ope(e);
+            idx >>= 1;
         }
     }
     
-    fn querry(l: mut usize, r: mut usize) -> T {
-        let mut res = T.unit();
-        l *= 2; r *= 2;
+    fn querry(&mut self, l: usize, r: usize) -> Result<T, &str> {
+        if r == 0 { Err("r must be nonzero value.") }
+        let mut res = T::unit();
+        l <<= 1; r <<= 1;
         while l < r {
-            res = res.ope(data[l]);
-            
-            
-        
-        
+            match l.trailing_zeros() {
+                0 => res = res.ope(self.data[l]),
+                i => {  l <<= i;
+                    res = res.ope(self.data[l])
+                },
+            };
+            Ok(res)
+        }
+        Err("")
+    }
+}
+
+#[lang = "usize"]
+impl usize {
+    #![feature(core_intrinsics)]
+    fn trailing_nonzeros(self) -> u32 {
+        if self == 0 { 0 }
+        else { unsafe { std::intrinsics::cttz_nonzero(self) as u32 } }
+    }
 }
 
 impl Monoid for u64 {
     fn unit() -> u64 { 0 }
-    fn ope(&self, e: u64) -> u64 { self + e }
+    fn ope(self, e: u64) -> u64 { self + e }
+    //fn trailing_zeros(self) -> u32 { self.trailing_zeros() }
 }
 
 
