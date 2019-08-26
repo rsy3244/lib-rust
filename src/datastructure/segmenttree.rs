@@ -52,7 +52,13 @@ where T: Monoid,
         }
     }
     
-    fn querry(l: usize, r: usize) -> T {
+    fn querry(l: mut usize, r: mut usize) -> T {
+        let mut res = T.unit();
+        l *= 2; r *= 2;
+        while l < r {
+            res = res.ope(data[l]);
+            
+            
         
         
 }
