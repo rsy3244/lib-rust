@@ -64,7 +64,30 @@ mod vebtree{
             VEBnode {
                 min = 1,
                 max = 0,
-                summary = VEBnode.new(u.sqrt())
+                summary = VEBnode::new(u.sqrt()),
+                cluster = vec![VEBnode::new(u.sqrt()) ; u.sqrt()]
+            }
+        }
+
+        fn empty() { self.max < self.min }
+        fn min(&self) { if self.max < self.min { None }
+                        else { Some{ self.min } }
+        }
+        fn max(&self) { if self.max < self.min { None }
+                        else { Some{ self.max } }
+        }
+        fn find(&self, e) { 
+            if self.empty() { false }
+            else { 
+                if e == min || e == max { true }
+                else { self.cluster[e.low()] }
+            }
+        }
+    }
+
+    impl u32 {
+                
+
 }
 
 fn main(){
