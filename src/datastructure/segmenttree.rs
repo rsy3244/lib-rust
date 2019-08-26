@@ -32,6 +32,7 @@ trait Monoid {
     //fn trailing_nonzeros(self) -> u32;
 }
 
+#[derive(Clone)]
 struct SegmentTree<T: Monoid>{
     size: usize,
     data: Vec<T>,
@@ -39,7 +40,7 @@ struct SegmentTree<T: Monoid>{
 
 impl<T> SegmentTree<T>
 where T: Monoid,
-      T: Clone
+      T: Copy
 {
     fn new(n: usize) -> Self {
         SegmentTree{
@@ -56,29 +57,17 @@ where T: Monoid,
         }
     }
     
-    fn querry(&mut self, l: usize, r: usize) -> Result<T, &str> {
-        if r == 0 { Err("r must be nonzero value.") }
+    fn querry(&self, l: usize, r: usize) -> Result<T, &'static str> {
+        if r == 0 { return Err("r must be nonzero value.") }
         let mut res = T::unit();
-        l <<= 1; r <<= 1;
+        let mut l = l << 1;
+        let mut r = r << 1;
         while l < r {
-            match l.trailing_zeros() {
-                0 => res = res.ope(self.data[l]),
-                i => {  l <<= i;
-                    res = res.ope(self.data[l])
-                },
-            };
-            Ok(res)
+            if l & 1 == 1 { res = res.ope(self.data[l]); l += 1;}
+            if r & 1 == 1 { res = res.ope(self.data[r-1]); r-= 1;}
+            l <<= 1; r <<= 1;
         }
-        Err("")
-    }
-}
-
-#[lang = "usize"]
-impl usize {
-    #![feature(core_intrinsics)]
-    fn trailing_nonzeros(self) -> u32 {
-        if self == 0 { 0 }
-        else { unsafe { std::intrinsics::cttz_nonzero(self) as u32 } }
+        Ok(res)
     }
 }
 
@@ -87,7 +76,6 @@ impl Monoid for u64 {
     fn ope(self, e: u64) -> u64 { self + e }
     //fn trailing_zeros(self) -> u32 { self.trailing_zeros() }
 }
-
 
 fn main(){
 	let cin = stdin();
